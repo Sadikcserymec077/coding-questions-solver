@@ -9,7 +9,7 @@ const app = express();
 const port = 3000;
 
 // Middleware
-app.use(express.json());
+app.use(express.static(path.join(__dirname,'public')));
 app.use(cors());
 
 // MongoDB connection string - Make sure the password is correct here
@@ -105,14 +105,9 @@ app.post('/api/login', async (req, res) => {
 });
 
 // --- API Endpoints with authentication ---
-app.get('/questions', async (req, res) => {
-    try {
-        const questions = await Question.find().sort({ dateCreated: -1 });
-        res.json(questions);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
 
 app.post('/questions', authMiddleware, async (req, res) => {
     const newQuestion = new Question({
