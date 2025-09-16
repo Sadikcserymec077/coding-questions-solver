@@ -280,7 +280,7 @@ form.addEventListener('submit', async (e) => {
     const token = localStorage.getItem('token');
 
     try {
-        const response = await fetch('http://localhost:3000/questions', {
+        const response = await fetch('https://coding-questions-solver.vercel.app/questions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -13,21 +13,21 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection string - Make sure the password is correct here
-const dbURI = 'mongodb+srv://mohammedsadiq4850_db_user:Sadik123456@cluster1.cwbtgya.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1';
+const dbURI = process.env.MONGODB_URI;
 
 mongoose.connect(dbURI)
     .then(() => console.log('Connected to MongoDB Atlas'))
     .catch(err => console.error('Could not connect to MongoDB Atlas:', err));
 
 // JWT Secret Key (use a strong, random string in a real project)
-const jwtSecret = 'mysecretkey_for_this_project';
+const jwtSecret = process.env.JWT_SECRET;
 
 // Nodemailer Transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'YOUR_EMAIL@gmail.com',
-        pass: 'YOUR_APP_PASSWORD'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
