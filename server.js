@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 const port = 3000;
+const path = require('path');
 
 // Middleware
 app.use(express.static(path.join(__dirname,'public')));
