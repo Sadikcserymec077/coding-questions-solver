@@ -34,14 +34,21 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 });
+
 // --- User Schema and Model ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 });
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+let User;
+try {
+  User = mongoose.model('User');
+} catch (error) {
+  User = mongoose.model('User', userSchema);
+}
 
+// --- Question Schema and Model ---
 const questionSchema = new mongoose.Schema({
     title: String,
     problemStatement: String,
@@ -50,7 +57,13 @@ const questionSchema = new mongoose.Schema({
     dateCreated: { type: Date, default: Date.now },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
-const Question = mongoose.models.Question || mongoose.model('Question', questionSchema);
+let Question;
+try {
+  Question = mongoose.model('Question');
+} catch (error) {
+  Question = mongoose.model('Question', questionSchema);
+}
+
 // --- Authentication Middleware ---
 const authMiddleware = (req, res, next) => {
     const authHeader = req.header('Authorization');
@@ -133,7 +146,7 @@ app.post('/questions', authMiddleware, async (req, res) => {
         const creator = await User.findById(req.user.id);
 
         const mailOptions = {
-            from: process.env.EMAIL_USER, // Correctly using environment variable
+            from: process.env.EMAIL_USER,
             to: recipientEmails.join(', '),
             subject: 'New Coding Question Posted!',
             html: `
@@ -194,5 +207,5 @@ app.get('*', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });
