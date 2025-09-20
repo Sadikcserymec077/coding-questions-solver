@@ -6,10 +6,28 @@
       "use": "@vercel/node"
     }
   ],
+  "rewrites": [
+    {
+      "source": "/api/register",
+      "destination": "/server/server.js"
+    },
+    {
+      "source": "/api/login",
+      "destination": "/server/server.js"
+    },
+    {
+      "source": "/questions",
+      "destination": "/server/server.js"
+    },
+    {
+      "source": "/questions/(.*)",
+      "destination": "/server/server.js"
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "server/server.js"
+      "dest": "/public/index.html"
     }
   ]
 }

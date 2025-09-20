@@ -201,9 +201,7 @@ app.put('/questions/:id', authMiddleware, async (req, res) => {
 });
 
 // A catch-all route to serve the front-end (must be last)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+
 
 // Start the server
 app.listen(port, () => {
