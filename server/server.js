@@ -4,23 +4,26 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-
-const app = express();
-const port = 3000;
 const path = require('path');
 
+const app = express();
+const port = process.env.PORT || 3000;
+
 // Middleware
-app.use(express.static(path.join(__dirname,'public')));
+app.use(express.json());
 app.use(cors());
 
-// MongoDB connection string - Make sure the password is correct here
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// MongoDB connection string
 const dbURI = process.env.MONGODB_URI;
 
 mongoose.connect(dbURI)
     .then(() => console.log('Connected to MongoDB Atlas'))
     .catch(err => console.error('Could not connect to MongoDB Atlas:', err));
 
-// JWT Secret Key (use a strong, random string in a real project)
+// JWT Secret Key (use environment variable)
 const jwtSecret = process.env.JWT_SECRET;
 
 // Nodemailer Transporter
@@ -40,7 +43,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// --- Question Schema (updated to link to user) ---
+// --- Question Schema ---
 const questionSchema = new mongoose.Schema({
     title: String,
     problemStatement: String,
@@ -54,8 +57,9 @@ const Question = mongoose.model('Question', questionSchema);
 // --- Authentication Middleware ---
 const authMiddleware = (req, res, next) => {
     const authHeader = req.header('Authorization');
-    if (!authHeader) return res.status(401).json({ message: 'No token, authorization denied' });
-
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
+    }
     const token = authHeader.replace('Bearer ', '');
     try {
         const decoded = jwt.verify(token, jwtSecret);
@@ -105,10 +109,15 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// --- API Endpoints with authentication ---
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
+// --- API Endpoints ---
+app.get('/questions', async (req, res) => {
+    try {
+        const questions = await Question.find().sort({ dateCreated: -1 });
+        res.json(questions);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 app.post('/questions', authMiddleware, async (req, res) => {
     const newQuestion = new Question({
@@ -127,7 +136,7 @@ app.post('/questions', authMiddleware, async (req, res) => {
         const creator = await User.findById(req.user.id);
 
         const mailOptions = {
-            from: 'YOUR_EMAIL@gmail.com',
+            from: process.env.EMAIL_USER, // Correctly using environment variable
             to: recipientEmails.join(', '),
             subject: 'New Coding Question Posted!',
             html: `
@@ -181,6 +190,12 @@ app.put('/questions/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// A catch-all route to serve the front-end (must be last)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start the server
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
