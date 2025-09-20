@@ -34,16 +34,14 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 });
-
 // --- User Schema and Model ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 });
-const User = mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-// --- Question Schema ---
 const questionSchema = new mongoose.Schema({
     title: String,
     problemStatement: String,
@@ -52,8 +50,7 @@ const questionSchema = new mongoose.Schema({
     dateCreated: { type: Date, default: Date.now },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
-const Question = mongoose.model('Question', questionSchema);
-
+const Question = mongoose.models.Question || mongoose.model('Question', questionSchema);
 // --- Authentication Middleware ---
 const authMiddleware = (req, res, next) => {
     const authHeader = req.header('Authorization');
